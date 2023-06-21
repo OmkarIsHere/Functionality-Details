@@ -70,7 +70,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:text="11"
+                    android:text="1"
                     android:textColor="@color/green"
                     android:textSize="@dimen/_15ssp" />
             </RelativeLayout>
@@ -116,7 +116,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:text="11"
+                    android:text=""
                     android:textColor="@color/green"
                     android:textSize="@dimen/_15ssp" />
             </RelativeLayout>
@@ -139,7 +139,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:text="11"
+                    android:text=""
                     android:textColor="@color/green"
                     android:textSize="@dimen/_15ssp" />
             </RelativeLayout>
@@ -162,7 +162,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:text="11"
+                    android:text=""
                     android:textColor="@color/green"
                     android:textSize="@dimen/_15ssp" />
             </RelativeLayout>
@@ -185,7 +185,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:text="11"
+                    android:text="00"
                     android:textColor="@color/green"
                     android:textSize="@dimen/_15ssp" />
             </RelativeLayout>

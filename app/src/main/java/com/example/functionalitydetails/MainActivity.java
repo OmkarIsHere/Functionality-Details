@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +29,7 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
+import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,6 +37,7 @@ import android.os.Handler;
 import android.provider.SyncStateContract;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -56,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
     TextView txtDateTime, txtCaptureCount, txtConnectivity, txtBatteryCharging, txtBatteryCharge, txtFrequency, txtLocation;
     Button btnRefresh;
     ImageView imgCapture;
-    int i =1;
+    int i, j;
     FusedLocationProviderClient fusedLocationProviderClient;
     List<Address> addresses = null;
     ActivityResultLauncher<String[]> mPermissionLauncher;
@@ -77,16 +80,15 @@ public class MainActivity extends AppCompatActivity {
         btnRefresh = findViewById(R.id.btnRefresh);
 //==============================================================================
         SharedPreferences pref = getSharedPreferences("Mypref", MODE_PRIVATE);
-        int i = pref.getInt("count", 1);
-        txtFrequency.setText(String.valueOf(i));
+        i = pref.getInt("count", 1);
+        j= pref.getInt("freq", 1);
+        txtCaptureCount.setText(String.valueOf(i));
+        txtFrequency.setText(String.valueOf(j));
 
         SharedPreferences preferences = getSharedPreferences("Mypref", MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt("count" , i++);
+        editor.putInt("count" , ++i);
         editor.apply();
-
-
-
 //==============================================================================
         mPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
             if (result.get(Manifest.permission.ACCESS_FINE_LOCATION) != null) {
@@ -97,7 +99,50 @@ public class MainActivity extends AppCompatActivity {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         getLocation();
 //====================================================================================
+        txtFrequency.setOnClickListener(v -> {
 
+                Dialog dialog = new Dialog(MainActivity.this);
+                dialog.setContentView(R.layout.layout_alert_dialog);
+                dialog.setCancelable(true);
+                dialog.show();
+
+                Button btnCancel = (Button)dialog.findViewById(R.id.btnCancel);
+                Button btnContinue = (Button)dialog.findViewById(R.id.btnContinue);
+                ImageButton btnMinus = (ImageButton)dialog.findViewById(R.id.btnSub);
+                ImageButton btnAdd = (ImageButton)dialog.findViewById(R.id.btnAdd);
+                TextView pQuantity = (TextView)dialog.findViewById(R.id.txtQuantity);
+
+                j = Integer.parseInt(txtFrequency.getText().toString().trim());
+                pQuantity.setText(String.valueOf(j));
+                btnAdd.setOnClickListener(v1 -> {
+                    if(j<30){
+                        j++;
+                        pQuantity.setText(String.valueOf(j));
+                    }
+                    if(j==30)
+                        Toast.makeText(MainActivity.this, "Maximum 30 min can select", Toast.LENGTH_SHORT).show();
+                });
+
+                btnMinus.setOnClickListener(v1 -> {
+                    if(j>1){
+                        j--;
+                    }
+                    pQuantity.setText(String.valueOf(j));
+                });
+
+                btnCancel.setOnClickListener(v1 -> dialog.dismiss());
+                btnContinue.setOnClickListener(v12 -> {
+                    String frequency = String.valueOf(pQuantity.getText());
+                    SharedPreferences preference = getSharedPreferences("Mypref", MODE_PRIVATE);
+                    SharedPreferences.Editor edit = preference.edit();
+                    edit.putInt("freq" , Integer.parseInt(frequency));
+                    edit.apply();
+                    txtFrequency.setText(frequency);
+                    dialog.dismiss();
+                });
+        });
+
+//====================================================================================
         LocalDateTime localDateTime = LocalDateTime.now();
         String str = localDateTime.toString().replace("T", " ");
         txtDateTime.setText(str);
@@ -120,15 +165,14 @@ public class MainActivity extends AppCompatActivity {
             txtConnectivity.setText(R.string.off);
 //====================================================================================
         String f = txtFrequency.getText().toString().trim();
-        f = f + "00000";
-        long freq = Long.parseLong(f);
+        long freq = Long.parseLong(f) * 60000;
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent i = new Intent(MainActivity.this, MainActivity.class);
-                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(i);
+                Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
             }
         }, freq);
 
@@ -136,9 +180,14 @@ public class MainActivity extends AppCompatActivity {
         btnRefresh.setOnClickListener(v -> {
 
             Intent intent = new Intent(MainActivity.this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         });
+//=====================================================================================
+        imgCapture.setOnClickListener(v -> {
+            captureImage();
+        });
+
     }
 //=====================================================================================
     @Override
@@ -211,6 +260,13 @@ public class MainActivity extends AppCompatActivity {
         ImagePicker.with(this)
                 .cameraOnly()
                 .start();
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        assert data != null;
+        Uri uri = data.getData();
+        imgCapture.setImageURI(uri);
     }
 
 }
